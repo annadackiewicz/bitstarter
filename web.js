@@ -5,8 +5,7 @@ var app = express.createServer(express.logger());
 app.get('/', function(request, response) {
   var fs = require('fs');
   //response.send('Hello World 2!');
-  var buff_index = fs.readFile("index.html")
-  response.send(buff_index)
+  response.send(fs.readFile("index.html"))
 });
 
 var port = process.env.PORT || 5000;
