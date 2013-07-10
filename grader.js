@@ -24,6 +24,7 @@ References:
 var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
+var restler = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
 
@@ -61,11 +62,27 @@ var clone = function(fn) {
     return fn.bind({});
 };
 
+var getUrl = function(givenurl) {
+    restler.get(givenurl).on('complete', function(result) {
+        if (result instanceof Error) {
+            console.log('Error: ' + result.message);
+            process.exit(1);
+        } else {
+            program.file = 'tmp_url';
+            fs.writeFileSync(program.file, result.toString());
+            //check_json_after_get(result, 'url');
+        }
+})};
+
 if(require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+        .option('-u, --url <url_file>', 'Url')
         .parse(process.argv);
+    if (program.url) {
+        getUrl(program.url);
+    }
     var checkJson = checkHtmlFile(program.file, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log(outJson);
